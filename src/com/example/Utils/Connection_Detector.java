@@ -39,7 +39,7 @@ public class Connection_Detector {
 				new DialogInterface.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {
 						pDialog.dismiss();
-						((Activity) acontext).finish();
+//						((Activity) acontext).finish();
 
 					}
 				});
