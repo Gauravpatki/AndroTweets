@@ -1,7 +1,5 @@
 package com.example.htest;
 
-import io.fabric.sdk.android.Fabric;
-
 import java.util.List;
 
 import android.annotation.SuppressLint;
@@ -18,6 +16,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -30,7 +30,6 @@ import com.twitter.sdk.android.Twitter;
 import com.twitter.sdk.android.core.Callback;
 import com.twitter.sdk.android.core.Result;
 import com.twitter.sdk.android.core.TwitterApiClient;
-import com.twitter.sdk.android.core.TwitterAuthConfig;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.TwitterException;
 import com.twitter.sdk.android.core.TwitterSession;
@@ -44,11 +43,13 @@ public class HomeScreen extends Activity implements
 	ListView feed;
 	TwitterSession session;
 	ProgressDialog pDialog;
-	private SearchView mSearchView;
+	SearchView mSearchView;
 	Connection_Detector cd;
 	TextView no;
-	private Menu aMenu;
+	Menu aMenu;
+	ImageView search;
 
+	@SuppressLint("NewApi")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -56,21 +57,27 @@ public class HomeScreen extends Activity implements
 		setContentView(R.layout.home_screen);
 		ActionBar bar = getActionBar();
 		bar.setBackgroundDrawable(new ColorDrawable(Color.DKGRAY));
-		bar.setDisplayShowHomeEnabled(true);
-		bar.setDisplayUseLogoEnabled(true);
 		no = (TextView) findViewById(R.id.no);
 		login = (TwitterLoginButton) findViewById(R.id.twitter_login_button);
 		feed = (ListView) findViewById(R.id.feed);
 		session = Twitter.getSessionManager().getActiveSession();
-		refreshUi();
+		search = (ImageView) findViewById(R.id.imageView1);
+		search.setOnClickListener(new OnClickListener() {
 
+			@Override
+			public void onClick(View v) {
+				mSearchView.setIconified(false);
+			}
+		});
+		refreshUi();
 		login.setCallback(new Callback<TwitterSession>() {
 
 			@Override
 			public void success(Result<TwitterSession> result) {
 				session = Twitter.getSessionManager().getActiveSession();
 				mSearchView.setVisibility(View.VISIBLE);
-
+				// mSearchView.onActionViewExpanded();
+				search.setVisibility(View.VISIBLE);
 				aMenu.findItem(R.id.action_search).setVisible(true);
 				Toast.makeText(HomeScreen.this,
 						"Welcome  " + result.data.getUserName(),
@@ -93,6 +100,7 @@ public class HomeScreen extends Activity implements
 	private void refreshUi() {
 		if (session != null) {
 			login.setVisibility(View.GONE);
+			search.setVisibility(View.VISIBLE);
 
 		} else {
 			login.setVisibility(View.VISIBLE);
@@ -101,6 +109,7 @@ public class HomeScreen extends Activity implements
 
 	}
 
+	@SuppressLint("NewApi")
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -119,8 +128,10 @@ public class HomeScreen extends Activity implements
 
 		} else {
 			menu.findItem(R.id.action_search).setVisible(true);
+			// mSearchView.onActionViewExpanded();
 
 		}
+
 		return super.onCreateOptionsMenu(menu);
 
 	}
@@ -131,8 +142,10 @@ public class HomeScreen extends Activity implements
 				"Loading. Please wait...", true);
 		Log.v("search", query);
 		String charat = "" + query.charAt(0);
+		mSearchView.clearFocus();
 		cd = new Connection_Detector(this);
 		if (cd.isConnectingToInternet()) {
+			search.setVisibility(View.GONE);
 			if (charat.equalsIgnoreCase("@")) {
 				getUserName(query);
 			} else {
@@ -147,6 +160,8 @@ public class HomeScreen extends Activity implements
 	}
 
 	void getUserName(String query) {
+		search.setVisibility(View.GONE);
+
 		UserApi m = new UserApi(session);
 		m.getCustomService().Getshow(query, new Callback<List<User>>() {
 
